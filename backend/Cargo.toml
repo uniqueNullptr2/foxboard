@@ -1,0 +1,19 @@
+[package]
+name = "foxboard"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version="4.5.20", features=["derive", "env"]}
+actix-web = "4"
+sqlx = {version = "0.8.2", features=["runtime-tokio", "tls-rustls", "postgres", "derive", "uuid", "chrono"]}
+reqwest = "0.12.7"
+log = "0.4.22"
+env_logger = "0.11.5"
+serde = {version="1.0.210", features=["derive"]}
+derive_more = { version = "1.0.0", features = ["error", "display"]} 
+rust-argon2 = "2.1"
+rand = {version="0.8.5", features=["getrandom"]}
+base64 = "0.22.1"
+chrono = "0.4.38"
+uuid = { version="1.1.0", features=["serde"]}
