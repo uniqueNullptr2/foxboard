@@ -95,7 +95,7 @@ async fn delete_user(
 ) -> Result<String> {
     handle_token_update(&pool, &user, &user.token, &req).await?;
     let id = path.into_inner();
-    handle_delete_user(&pool, id).await?;
+    handle_delete_user(&pool, &user, id).await?;
     Ok("".to_owned())
 }
 

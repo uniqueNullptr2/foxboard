@@ -54,7 +54,7 @@ impl From<CreateUserMessage> for UserModel {
             username: value.username,
             password_hash: hash,
             id: Uuid::nil(),
-            is_admin: value.is_admin,
+            is_admin: value.is_admin.unwrap_or(false),
         }
     }
 }
@@ -85,7 +85,6 @@ impl FromRequest for AuthenticatedUser {
                 msg: "Pool Missing".to_owned(),
             })
             .cloned();
-        log::info!("here be no problems yet");
         let header = req
             .headers()
             .get("Authorization")
@@ -98,7 +97,6 @@ impl FromRequest for AuthenticatedUser {
             if !token.starts_with("Bearer ") {
                 Err(auth_error("Doesnt start with 'Bearer '"))?;
             }
-            log::info!("{}", &token[7..]);
             let user = get_user_from_session(&mut *pool.acquire().await?, &token[7..])
                 .await?
                 .ok_or(not_found("Could not find user by token"))?;

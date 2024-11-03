@@ -42,14 +42,6 @@ pub async fn get_users(conn: &mut PgConnection, pag: Pagination) -> Result<(i32,
     Ok((estimate, users))
 }
 
-pub async fn delete_iser(conn: &mut PgConnection, user_id: Uuid) -> Result<()> {
-    sqlx::query("DELETE users where id=$1")
-        .bind(user_id)
-        .execute(conn)
-        .await?;
-    Ok(())
-}
-
 pub async fn get_user_from_session(
     conn: &mut PgConnection,
     session_token: &str,
@@ -108,7 +100,7 @@ pub async fn update_user_session(conn: &mut PgConnection, session: UserSessionMo
 }
 
 pub async fn check_username_available(conn: &mut PgConnection, username: &str) -> Result<bool> {
-    Ok(sqlx::query("select username from users where username+$1")
+    Ok(sqlx::query("select username from users where username=$1")
         .bind(username)
         .fetch_optional(conn)
         .await?

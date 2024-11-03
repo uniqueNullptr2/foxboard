@@ -11,7 +11,7 @@ use crate::data::user_data::{
     check_username_available, create_user_session, delete_user, get_user_by_id, get_users,
     update_user, update_user_session,
 };
-use crate::error::{bad_request, not_found, Result};
+use crate::error::{bad_request, not_found, unauthorized, Result};
 use crate::messages::messages::SuccessMessage;
 use crate::messages::user_messages::{LoginMessage, LoginTokenMessage, UpdateUserMessage};
 use crate::util::{Page, Pagination};
@@ -142,9 +142,13 @@ pub async fn handle_check_username_available(
     ))
 }
 
-pub async fn handle_delete_user(pool: &Pool<Postgres>, id: Uuid) -> Result<()> {
-    delete_user(&mut *pool.acquire().await?, id).await?;
-    Ok(())
+pub async fn handle_delete_user(pool: &Pool<Postgres>, user: &UserModel, id: Uuid) -> Result<()> {
+    if user.is_admin || user.id == id {
+        delete_user(&mut *pool.acquire().await?, id).await?;
+        Ok(())
+    } else {
+        Err(unauthorized("I cannot let you do that"))
+    }
 }
 
 pub async fn handle_get_user(pool: &Pool<Postgres>, id: Uuid) -> Result<UserMessage> {

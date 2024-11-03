@@ -9,7 +9,7 @@ pub struct CreateUserMessage {
     pub(crate) username: String,
     pub(crate) password: String,
     // pub(crate) email: String,
-    pub(crate) is_admin: bool,
+    pub(crate) is_admin: Option<bool>,
 }
 
 impl CreateUserMessage {
@@ -17,7 +17,7 @@ impl CreateUserMessage {
         Self {
             username,
             password,
-            is_admin,
+            is_admin: Some(is_admin),
         }
     }
 }
