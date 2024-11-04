@@ -16,8 +16,8 @@ pub fn register_project_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/projects")
             .route("", web::post().to(create_project))
-            .route("/{project_id}", web::get().to(get_project))
             .route("/list", web::get().to(get_projects))
+            .route("/{project_id}", web::get().to(get_project))
             .route("/{project_id}", web::delete().to(delete_project))
         );
 }

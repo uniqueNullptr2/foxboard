@@ -32,7 +32,7 @@ pub async fn update_user(conn: &mut PgConnection, user: &UserModel) -> Result<()
 }
 
 pub async fn get_users(conn: &mut PgConnection, pag: Pagination) -> Result<(i32, Vec<UserModel>)> {
-    let users = sqlx::query_as("Select * from users limit $1 offset $2")
+    let users = sqlx::query_as("Select * from users order by created ASC limit $1 offset $2")
         .bind(pag.count)
         .bind(pag.count * (pag.page - 1))
         .fetch_all(&mut *conn)

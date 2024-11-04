@@ -26,6 +26,6 @@ pub struct Config {
     pub name: Option<String>,
 
     /// Turn debugging information on
-    #[arg(short, long, env="FOXB_DEBUG", action = clap::ArgAction::Count)]
-    pub debug: u8,
+    #[arg(short, long, env="FOXB_DEBUG", action = clap::ArgAction::SetTrue)]
+    pub debug: bool,
 }
