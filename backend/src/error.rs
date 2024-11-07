@@ -68,6 +68,12 @@ impl From<uuid::Error> for AppError {
     }
 }
 
+pub fn db_error(msg: &str) -> AppError {
+    AppError::DBError {
+        msg: msg.to_owned(),
+    }
+}
+
 pub fn bad_request(msg: &str) -> AppError {
     AppError::RequestError {
         msg: msg.to_owned(),

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::types::Uuid;
 
-use crate::data::models::{ProjectColumnModel, ProjectModel};
+use crate::{data::models::{Permissions, ProjectColumnModel, ProjectModel}, util::Requirement};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ProjectMessage {
@@ -40,8 +40,27 @@ impl CreateProjectMessage {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UpdateProjectMessage {
-    pub name: String,
-    pub public: bool,
+    pub name: Option<String>,
+    pub public: Option<bool>,
+    pub owner_id: Option<Uuid>
+}
+
+impl Requirement for UpdateProjectMessage {
+    fn requirements(&self) -> Permissions {
+        if self.public.is_some() || self.owner_id.is_some() {
+            Permissions::Owner
+        } else {
+            Permissions::Editor
+        }
+    }
+}
+
+impl UpdateProjectMessage {
+    pub fn update_project(self, mod_proj: &mut ProjectModel) {
+        self.name.map(|v| mod_proj.name = v);
+        self.owner_id.map(|v| mod_proj.owner_id = v);
+        self.public.map(|v| mod_proj.public = v);
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug)]

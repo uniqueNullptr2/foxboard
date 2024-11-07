@@ -3,7 +3,7 @@ use sqlx::PgConnection;
 
 use crate::data::models::UserModel;
 use crate::error::Result;
-use crate::util::Pagination;
+use crate::util::{from_pg_rows, Pagination};
 
 use super::models::UserSessionModel;
 
@@ -31,15 +31,13 @@ pub async fn update_user(conn: &mut PgConnection, user: &UserModel) -> Result<()
     Ok(())
 }
 
-pub async fn get_users(conn: &mut PgConnection, pag: Pagination) -> Result<(i32, Vec<UserModel>)> {
-    let users = sqlx::query_as("Select * from users order by created ASC limit $1 offset $2")
+pub async fn get_users(conn: &mut PgConnection, pag: Pagination) -> Result<(i64, Vec<UserModel>)> {
+    let r = sqlx::query("Select *, count(*) over() as full_count from users order by created ASC limit $1 offset $2")
         .bind(pag.count)
         .bind(pag.count * (pag.page - 1))
         .fetch_all(&mut *conn)
         .await?;
-    // let estimate: i32 = sqlx::query_scalar("SELECT n_live_tup FROM pg_stat_user_tables WHERE relname = 'users';").fetch_one(conn).await?;
-    let estimate = 42;
-    Ok((estimate, users))
+    from_pg_rows(&r, "full_count")
 }
 
 pub async fn get_user_from_session(
@@ -114,3 +112,4 @@ pub async fn delete_user(conn: &mut PgConnection, id: Uuid) -> Result<()> {
         .await?;
     Ok(())
 }
+
