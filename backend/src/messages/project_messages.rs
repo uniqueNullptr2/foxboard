@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::types::Uuid;
 
-use crate::data::models::{Permissions, ProjectColumnModel, ProjectModel};
+use crate::data::models::{LabelModel, Permissions, ProjectColumnModel, ProjectModel};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ProjectMessage {
@@ -9,6 +9,8 @@ pub struct ProjectMessage {
     pub name: String,
     pub owner_id: Uuid,
     pub public: bool,
+    pub labels: Option<Vec<LabelMessage>>,
+    pub columns: Option<Vec<ProjectColumnMessage>>,
 }
 
 impl From<ProjectModel> for ProjectMessage {
@@ -18,6 +20,8 @@ impl From<ProjectModel> for ProjectMessage {
             name: value.name,
             owner_id: value.owner_id,
             public: value.public,
+            labels: None,
+            columns: None,
         }
     }
 }
@@ -74,6 +78,7 @@ pub struct ProjectColumnMessage {
     pub project_id: Uuid,
     pub index: i32,
 }
+
 impl From<ProjectColumnModel> for ProjectColumnMessage {
     fn from(value: ProjectColumnModel) -> Self {
         Self {
@@ -88,22 +93,73 @@ impl From<ProjectColumnModel> for ProjectColumnMessage {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateProjectColumnMessage {
     pub name: String,
-    pub card_limit: i32,
+    pub card_limit: Option<i32>,
+    pub index: i32,
 }
 impl CreateProjectColumnMessage {
-    pub fn to_model(self, project_id: Uuid, index: i32) -> ProjectColumnModel {
+    pub fn to_model(self, project_id: Uuid) -> ProjectColumnModel {
         ProjectColumnModel {
             id: Uuid::nil(),
             name: self.name,
             project_id,
-            index,
-            card_limit: self.card_limit,
+            index: self.index,
+            card_limit: self.card_limit.unwrap_or(0),
         }
     }
 }
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UpdateProjectColumnMessage {
+    pub name: Option<String>,
+    pub index: Option<i32>,
+    pub card_limit: Option<i32>,
+}
+impl UpdateProjectColumnMessage{
+    pub fn update_model(self, mod_column: &mut ProjectColumnModel) {
+        if let Some(name) = self.name {mod_column.name = name};
+        if let Some(index) = self.index {mod_column.index = index};
+        if let Some(card_limit) = self.card_limit {mod_column.card_limit = card_limit};
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct LabelMessage {
+    pub id: Uuid,
     pub name: String,
-    pub index: i32,
-    pub card_limit: i32,
+    pub project_id: Uuid,
+}
+
+impl From<LabelModel> for LabelMessage{
+    fn from(value: LabelModel) -> Self {
+        LabelMessage{
+            id: value.id,
+            name: value.name,
+            project_id: value.project_id
+        }
+    }
+}
+
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct CreateLabelMessage{
+    pub name: String,
+}
+ impl CreateLabelMessage {
+    pub fn to_model(self, project_id: Uuid) -> LabelModel {
+        LabelModel{
+            id: Uuid::nil(),
+            name: self.name,
+            project_id
+        }
+    }
+ }
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct UpdateLabelMessage{
+    pub name: String,
+}
+
+impl UpdateLabelMessage {
+    pub fn update_model(self, mod_label: &mut LabelModel) {
+        mod_label.name = self.name;
+    }
 }

@@ -1,6 +1,6 @@
 -- Add up migration script here
 Create table if not exists project_permissions (
-  perm int UNIQUE NOT NULL default 5,
+  perm int NOT NULL default 5,
   user_id uuid NOT NULL,
   project_id uuid NOT NULL,
   created timestamp NOT NULL default current_timestamp,

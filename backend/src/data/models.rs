@@ -1,6 +1,6 @@
 use super::user_data::get_user_from_session;
 use crate::{
-    error::{auth_error, not_found, unauthorized, AppError, Result},
+error::{auth_error, not_found, unauthorized, AppError, Result},
     messages::user_messages::CreateUserMessage,
 };
 use actix_web::{web, FromRequest};
