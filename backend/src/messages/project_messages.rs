@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::types::Uuid;
 
-use crate::data::models::{LabelModel, Permissions, ProjectColumnModel, ProjectModel};
+use crate::data::models::{LabelModel, Permissions, ProjectColumnModel, ProjectModel, StateModel};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ProjectMessage {
@@ -113,11 +113,17 @@ pub struct UpdateProjectColumnMessage {
     pub index: Option<i32>,
     pub card_limit: Option<i32>,
 }
-impl UpdateProjectColumnMessage{
+impl UpdateProjectColumnMessage {
     pub fn update_model(self, mod_column: &mut ProjectColumnModel) {
-        if let Some(name) = self.name {mod_column.name = name};
-        if let Some(index) = self.index {mod_column.index = index};
-        if let Some(card_limit) = self.card_limit {mod_column.card_limit = card_limit};
+        if let Some(name) = self.name {
+            mod_column.name = name
+        };
+        if let Some(index) = self.index {
+            mod_column.index = index
+        };
+        if let Some(card_limit) = self.card_limit {
+            mod_column.card_limit = card_limit
+        };
     }
 }
 
@@ -128,38 +134,80 @@ pub struct LabelMessage {
     pub project_id: Uuid,
 }
 
-impl From<LabelModel> for LabelMessage{
+impl From<LabelModel> for LabelMessage {
     fn from(value: LabelModel) -> Self {
-        LabelMessage{
+        LabelMessage {
             id: value.id,
             name: value.name,
-            project_id: value.project_id
+            project_id: value.project_id,
         }
     }
 }
 
-
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CreateLabelMessage{
+pub struct CreateLabelMessage {
     pub name: String,
 }
- impl CreateLabelMessage {
+impl CreateLabelMessage {
     pub fn to_model(self, project_id: Uuid) -> LabelModel {
-        LabelModel{
+        LabelModel {
             id: Uuid::nil(),
             name: self.name,
-            project_id
+            project_id,
         }
     }
- }
+}
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct UpdateLabelMessage{
+pub struct UpdateLabelMessage {
     pub name: String,
 }
 
 impl UpdateLabelMessage {
     pub fn update_model(self, mod_label: &mut LabelModel) {
         mod_label.name = self.name;
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct StateMessage {
+    pub id: Uuid,
+    pub name: String,
+    pub project_id: Uuid,
+}
+
+impl From<StateModel> for StateMessage {
+    fn from(value: StateModel) -> Self {
+        Self {
+            id: value.id,
+            name: value.name,
+            project_id: value.project_id,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct CreateStateMessage {
+    pub name: String,
+}
+
+impl CreateStateMessage {
+    pub fn to_model(self, project_id: Uuid) -> StateModel {
+        StateModel {
+            id: Uuid::nil(),
+            name: self.name,
+            project_id,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct UpdateStateMessage {
+    pub name: String,
+}
+
+impl UpdateStateMessage {
+    pub fn update_model(self, model: &mut StateModel) {
+        model.name = self.name;
     }
 }

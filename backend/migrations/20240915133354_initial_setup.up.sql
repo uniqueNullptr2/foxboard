@@ -87,15 +87,15 @@ CREATE TABLE IF NOT EXISTS tasks (
   CONSTRAINT fk_tasks_assignee
       FOREIGN KEY(assignee_id) 
         REFERENCES users(id)
-        on delete cascade, -- just set null
+        on delete cascade,
   CONSTRAINT fk_tasks_creator
       FOREIGN KEY(creator_id) 
         REFERENCES users(id)
-        on delete cascade, -- set null
+        on delete cascade, 
   CONSTRAINT fk_tasks_column
       FOREIGN KEY(column_id) 
         REFERENCES project_columns(id)
-        on delete cascade --just set null
+        on delete cascade
 );
 
 CREATE TABLE IF NOT EXISTS labels (

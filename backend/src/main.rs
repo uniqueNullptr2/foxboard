@@ -12,7 +12,7 @@ pub mod messages;
 pub mod routes;
 pub mod util;
 
-use routes::{project_routes::register_project_routes, user_routes::register_user_routes};
+use routes::{project_routes::register_project_routes, task_routes::register_task_routes, user_routes::register_user_routes};
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let config = Config::parse();
@@ -25,7 +25,7 @@ async fn main() -> std::io::Result<()> {
     log::info!("This is an example message.");
 
     let pool = PgPoolOptions::new()
-        .max_connections(20)
+        .max_connections(20) //TODO as config value
         .connect(&format!(
             "postgres://{}:{}@{}/{}",
             &config.db_user, &config.db_password, &config.db_host, &config.db_db
@@ -46,6 +46,7 @@ async fn main() -> std::io::Result<()> {
 fn init_app(cfg: &mut web::ServiceConfig) {
     register_user_routes(cfg);
     register_project_routes(cfg);
+    register_task_routes(cfg);
 }
 
 async fn start_server(pool: Pool<Postgres>) -> std::io::Result<()> {

@@ -112,3 +112,14 @@ pub async fn delete_user(conn: &mut PgConnection, id: Uuid) -> Result<()> {
         .await?;
     Ok(())
 }
+
+pub async fn get_user_sessions_by_user(
+    conn: &mut PgConnection,
+    user_id: Uuid,
+) -> Result<Vec<UserSessionModel>> {
+    let sessions = sqlx::query_as("select * from user_sessions")
+        .bind(user_id)
+        .fetch_all(conn)
+        .await?;
+    Ok(sessions)
+}

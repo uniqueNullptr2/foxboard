@@ -1,4 +1,4 @@
-use super::models::{LabelModel, Permissions, ProjectColumnModel, ProjectModel};
+use super::models::{LabelModel, Permissions, ProjectColumnModel, ProjectModel, StateModel};
 use crate::{
     error::Result,
     util::{from_pg_rows, Pagination},
@@ -76,7 +76,6 @@ pub async fn delete_project(conn: &mut PgConnection, id: Uuid) -> Result<()> {
     Ok(())
 }
 
-
 pub async fn get_project_permission(
     conn: &mut PgConnection,
     user_id: Uuid,
@@ -92,7 +91,6 @@ pub async fn get_project_permission(
     )
 }
 
-
 pub async fn create_column(conn: &mut PgConnection, col: &mut ProjectColumnModel) -> Result<()> {
     let id: Uuid = sqlx::query_scalar(
         "INSERT INTO project_columns (name, card_limit, index, project_id) values($1, $2, $3, $4) returning id",
@@ -107,15 +105,13 @@ pub async fn create_column(conn: &mut PgConnection, col: &mut ProjectColumnModel
     Ok(())
 }
 
-
 pub async fn create_label(conn: &mut PgConnection, lab: &mut LabelModel) -> Result<()> {
-    let id: Uuid = sqlx::query_scalar(
-        "INSERT INTO labels (name, project_id) values($1, $2) returning id",
-    )
-    .bind(&lab.name)
-    .bind(lab.project_id)
-    .fetch_one(conn)
-    .await?;
+    let id: Uuid =
+        sqlx::query_scalar("INSERT INTO labels (name, project_id) values($1, $2) returning id")
+            .bind(&lab.name)
+            .bind(lab.project_id)
+            .fetch_one(conn)
+            .await?;
     lab.id = id;
     Ok(())
 }
@@ -135,7 +131,6 @@ pub async fn get_label(conn: &mut PgConnection, id: Uuid) -> Result<Option<Label
         .await?;
     Ok(lab)
 }
-
 
 pub async fn update_column(conn: &mut PgConnection, col: &ProjectColumnModel) -> Result<()> {
     sqlx::query("UPDATE project_columns SET name=$1, index=$2, card_limit=$3 where id=$4")
@@ -173,11 +168,16 @@ pub async fn delete_label(conn: &mut PgConnection, label_id: Uuid) -> Result<()>
     Ok(())
 }
 
-pub async fn get_columns(conn: &mut PgConnection, project_id: Uuid) -> Result<Vec<ProjectColumnModel>> {
-    let columns = sqlx::query_as("select * from project_columns where project_id=$1 order by index, created ASC")
-        .bind(project_id)
-        .fetch_all(conn)
-        .await?;
+pub async fn get_columns(
+    conn: &mut PgConnection,
+    project_id: Uuid,
+) -> Result<Vec<ProjectColumnModel>> {
+    let columns = sqlx::query_as(
+        "select * from project_columns where project_id=$1 order by index, created ASC",
+    )
+    .bind(project_id)
+    .fetch_all(conn)
+    .await?;
     Ok(columns)
 }
 
@@ -187,4 +187,44 @@ pub async fn get_labels(conn: &mut PgConnection, project_id: Uuid) -> Result<Vec
         .fetch_all(conn)
         .await?;
     Ok(labels)
+}
+
+pub async fn create_state(conn: &mut PgConnection, state: &mut StateModel) -> Result<()> {
+    let id: Uuid =
+        sqlx::query_scalar("INSERT INTO states (name, project_id) values($1, $2) returning id")
+            .bind(&state.name)
+            .bind(state.project_id)
+            .fetch_one(conn)
+            .await?;
+    state.id = id;
+    Ok(())
+}
+pub async fn get_state(conn: &mut PgConnection, id: Uuid) -> Result<Option<StateModel>> {
+    let state = sqlx::query_as("Select * FROM states where id=$1")
+        .bind(id)
+        .fetch_optional(conn)
+        .await?;
+    Ok(state)
+}
+pub async fn update_state(conn: &mut PgConnection, state: &StateModel) -> Result<()> {
+    sqlx::query("UPDATE states SET name=$1 where id=$2")
+        .bind(&state.name)
+        .bind(state.id)
+        .execute(conn)
+        .await?;
+    Ok(())
+}
+pub async fn delete_state(conn: &mut PgConnection, state_id: Uuid) -> Result<()> {
+    sqlx::query("delete from states where id=$1")
+        .bind(state_id)
+        .execute(conn)
+        .await?;
+    Ok(())
+}
+pub async fn get_states(conn: &mut PgConnection, project_id: Uuid) -> Result<Vec<StateModel>> {
+    let states = sqlx::query_as("select * from states where project_id=$1 order by created asc")
+        .bind(project_id)
+        .fetch_all(conn)
+        .await?;
+    Ok(states)
 }

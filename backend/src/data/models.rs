@@ -1,6 +1,6 @@
 use super::user_data::get_user_from_session;
 use crate::{
-error::{auth_error, not_found, unauthorized, AppError, Result},
+    error::{auth_error, not_found, unauthorized, AppError, Result},
     messages::user_messages::CreateUserMessage,
 };
 use actix_web::{web, FromRequest};
@@ -179,16 +179,37 @@ pub struct TaskModel {
     pub title: String,
     pub id: Uuid,
     pub project_id: Uuid,
-    pub column_id: Uuid,
-    pub assignee_id: Uuid,
-    pub creator_id: Uuid,
-    pub deadline: chrono::DateTime<chrono::Utc>,
-    pub estimation: i32,
+    pub column_id: Option<Uuid>,
+    pub assignee_id: Option<Uuid>,
+    pub creator_id: Option<Uuid>,
+    pub deadline: Option<chrono::DateTime<chrono::Utc>>,
+    pub estimation: Option<i32>,
+    pub state_id: Option<Uuid>,
+    pub parent_id: Option<Uuid>,
+    pub task_type: i32,
+}
+
+#[derive(Debug)]
+pub enum TaskType {
+    Standard,
+    Repeatable,
+}
+
+impl Default for TaskType {
+    fn default() -> Self {
+        Self::Standard
+    }
 }
 
 #[derive(sqlx::FromRow, Default, Debug)]
-
 pub struct LabelModel {
+    pub name: String,
+    pub id: Uuid,
+    pub project_id: Uuid,
+}
+
+#[derive(sqlx::FromRow, Default, Debug)]
+pub struct StateModel {
     pub name: String,
     pub id: Uuid,
     pub project_id: Uuid,
