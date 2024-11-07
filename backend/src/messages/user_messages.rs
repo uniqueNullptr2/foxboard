@@ -1,8 +1,7 @@
+use crate::data::models::{AuthenticatedUser, Permissions, UserModel};
+use crate::error::{bad_request, Result};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-
-use crate::data::models::{AuthenticatedUser, UserModel};
-use crate::error::{forbidden, Result};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct CreateUserMessage {
@@ -71,12 +70,18 @@ pub struct UpdateUserMessage {
 
 impl UpdateUserMessage {
     pub fn validate(&self, user: &AuthenticatedUser) -> Result<()> {
-        if !user.is_admin
-            && (self.is_admin.unwrap_or(false) || self.id.filter(|id| *id != user.id).is_some())
-        {
-            Err(forbidden("Not allowed to change a user this way."))
+        if !user.is_admin && self.new_password.is_some() != self.old_password.is_some() {
+            Err(bad_request("Need new and old password to verify"))
         } else {
             Ok(())
+        }
+    }
+
+    pub fn get_requirements(&self, user_id: Uuid) -> Permissions {
+        if (self.id.is_some() && self.id.unwrap() != user_id) || self.is_admin.is_some() {
+            Permissions::Admin
+        } else {
+            Permissions::Owner
         }
     }
 
@@ -87,13 +92,10 @@ impl UpdateUserMessage {
         self.is_admin
             .into_iter()
             .for_each(|u| mod_user.is_admin = u);
-        match &self.new_password {
-            Some(u) => {
-                if mod_user.check_password(&self.old_password.unwrap_or("".to_owned()))? {
-                    mod_user.change_password(&u);
-                }
+        if let Some(u) = &self.new_password {
+            if mod_user.check_password(&self.old_password.unwrap_or("".to_owned()))? {
+                mod_user.change_password(u);
             }
-            _ => (),
         }
         Ok(())
     }

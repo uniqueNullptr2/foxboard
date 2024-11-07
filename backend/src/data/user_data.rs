@@ -112,4 +112,3 @@ pub async fn delete_user(conn: &mut PgConnection, id: Uuid) -> Result<()> {
         .await?;
     Ok(())
 }
-

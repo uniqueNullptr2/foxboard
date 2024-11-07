@@ -20,7 +20,7 @@ async fn main() -> std::io::Result<()> {
     env_logger::init_from_env(
         Env::default()
             .filter("FOXB_LOG_LEVEL")
-            .default_filter_or(if config.debug {"debug"} else {"info"}), // TODO separate config value for loglevel. debug if debug otherwise grap value, info by default
+            .default_filter_or(if config.debug { "debug" } else { "info" }), // TODO separate config value for loglevel. debug if debug otherwise grap value, info by default
     );
     log::info!("This is an example message.");
 

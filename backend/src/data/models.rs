@@ -1,12 +1,12 @@
 use super::user_data::get_user_from_session;
 use crate::{
-    error::{auth_error, forbidden, not_found, AppError, Result},
+    error::{auth_error, not_found, unauthorized, AppError, Result},
     messages::user_messages::CreateUserMessage,
 };
 use actix_web::{web, FromRequest};
 use argon2::Config;
 use rand::{rngs::OsRng, RngCore};
-use sqlx::{postgres::PgRow, Row, types::Uuid, FromRow, Pool, Postgres};
+use sqlx::{postgres::PgRow, types::Uuid, FromRow, Pool, Postgres, Row};
 use std::{future::Future, ops::Deref, pin::Pin};
 
 #[derive(sqlx::FromRow, Default, Debug)]
@@ -29,7 +29,7 @@ impl UserModel {
 
     pub fn is_admin(&self) -> Result<()> {
         if !self.is_admin {
-            Err(forbidden("Forbidden"))
+            Err(unauthorized("Admin required"))
         } else {
             Ok(())
         }
@@ -45,6 +45,16 @@ impl UserModel {
     pub fn perms(&self) -> Option<Permissions> {
         if self.is_admin {
             Some(Permissions::Admin)
+        } else {
+            None
+        }
+    }
+}
+
+impl Ressource for UserModel {
+    fn get_permissions(&self, user_id: Uuid) -> Option<Permissions> {
+        if self.id == user_id {
+            Some(Permissions::Owner)
         } else {
             None
         }
@@ -185,12 +195,12 @@ pub struct LabelModel {
 }
 
 #[derive(PartialEq, PartialOrd, Eq, Ord)]
-pub enum Permissions{
+pub enum Permissions {
     Admin,
     Owner,
     Editor,
     Reader,
-    None
+    None,
 }
 
 impl Permissions {
@@ -200,13 +210,12 @@ impl Permissions {
             1 => Self::Owner,
             2 => Self::Editor,
             3 => Self::Reader,
-            _ => Self::None
+            _ => Self::None,
         }
     }
 }
 impl FromRow<'_, PgRow> for Permissions {
     fn from_row(row: &PgRow) -> sqlx::Result<Self> {
-
         Ok(Self::from_i32(row.try_get(0)?))
     }
 }
@@ -219,5 +228,3 @@ impl Default for Permissions {
 pub trait Ressource {
     fn get_permissions(&self, user_id: Uuid) -> Option<Permissions>;
 }
-
-
